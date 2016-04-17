@@ -8,7 +8,7 @@ Shopping list:
 
 ### D0 and D1 pins
 
-Ouf ot the box, the Monteino is meant for peer to peer communication. In order to make the SX1276 chip talk to the things network, you'll have to soder at least the D0 and D1 pin. My sodering skills are far beyond [Urs Marti](https://github.com/urs8000)'s so I just show you his image, D0/D1 are the red cables, the yellow one is reset (not really needed).
+Ouf ot the box, the Monteino is meant for peer to peer communication. In order to make the SX1276 chip talk to the things network, you'll have to soder at least the D0 and D1 pin of the chip to the monteino's pins 0 and 1. Note that D2 is already connected with pin 0. My sodering skills are far beyond [Urs Marti](https://github.com/urs8000)'s so I just show you his image, D0/D1 are the red cables, the yellow one is reset (not really needed).
 <img src="https://github.com/lukastheiler/ttn_monteino/blob/master/images/monteinomega_for_lora-ttn_1024.jpg">
 
 ### Antenna
@@ -20,6 +20,18 @@ You'll also need to attach an antenna. I just took a copper wire of 8.2cm length
 I started out with this repository https://github.com/matthijskooijman/arduino-lmic which made the IBM LIC library availbably to arduino. The arduino code is in this git.
 
 ## Changes
+
+* **LMIC Pin mapping**.
+  Adjust them to the corresponding pins.
+  ```
+  // Pin mapping
+  const lmic_pinmap lmic_pins = {
+    .nss = 4,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = 13,
+    .dio = {2, 1, 0},
+  };
+  ```
 
 * **Node Device address**.
 ```static const u4_t DEVADDR = 0xFEEDBEEF```, the addresses are non-inique.
