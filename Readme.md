@@ -1,4 +1,4 @@
-# The Thing network - Arduino Monteino Lora walkthrough
+# The Thing Network - Arduino Monteino Lora walkthrough
 Step by step guide to get the Monteino Lora edition up and running.
 Shopping list:
 
@@ -25,8 +25,8 @@ I started out with this repository https://github.com/matthijskooijman/arduino-l
 ```static const u4_t DEVADDR = 0xFEEDBEEF```, the addresses are non-inique.
 Check the [address space] (http://staging.thethingsnetwork.org/wiki/Legacy/AddressSpace)
 
-* **The message**
-I just submit the current counter.
+* **The message**.
+I just submit the current counter. Basically, this is where you'd collect and send the sensor data.
   ```
   byte buffer[32];
   int counter = 0;
