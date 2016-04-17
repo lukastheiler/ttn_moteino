@@ -7,7 +7,7 @@ var client = mqtt.connect('tcp://croft.thethings.girovito.nl:1883');
 var i=0;
 
 client.on('connect', function () {
-    nodes=['nodes/5A480BED/packets','nodes/5A48DEAD/packets','nodes/5A48FEED/packets'];
+    nodes=['nodes/FEEDBEEF/packets'];
     nodes.forEach(n => {
     	   console.log("connected, subscribed "+n);
        	 client.subscribe(n);
