@@ -2,7 +2,7 @@
 Step by step guide to get the Moteino Lora edition up and running.
 Shopping list:
 
-- [Monetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll  need an USB-TTL converter.
+- [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll  need an USB-TTL converter.
 
 # Sodering
 
