@@ -1,4 +1,4 @@
-# The Thing Network - Arduino Moteino Lora Walkthrough
+# The Things Network - Arduino Moteino Lora Walkthrough
 
 Update: with the new backend this is work in progress!
 
