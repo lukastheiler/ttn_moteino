@@ -2,7 +2,7 @@
 
 Update: with the new backend, this is work in progress!
 
-## RN2483 and otaa Walkthrough
+## RN2483 and OTAA Walkthrough
 
 I've failed so far connecting the Moteino, sometimes there was a message, sometimes it failed. it took 15 minutes to get messages from the new backend. It's hard to figure out where the source of error is. Therefore took the RN2483 to figure out how the whole thing works.
 
