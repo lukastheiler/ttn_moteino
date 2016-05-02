@@ -95,10 +95,12 @@ And back with the RN2483, you send off a message:
 
   ```
   mac tx cnf 1 48656c6C6F
-  ok
-  mac_rx 1
+  > ok
+  > mac_rx 1
   ```
-  Watch the mqtt channel:
+
+Watch the mqtt channel:
+
   ```
   INFO Subscribed. Waiting for messages...
   INFO Hello                                    DevEUI=FEEDFEEDFEEDFEED
