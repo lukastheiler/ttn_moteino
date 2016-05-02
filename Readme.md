@@ -1,10 +1,10 @@
-# The Things Network - Arduino Moteino Lora Walkthrough
+# The Things Network with the Moteino and RN2483
 
-Update: with the new backend this is work in progress!
+Update: with the new backend, this is work in progress!
 
-## RN2482 and otaa Walkthrough
+## RN2483 and otaa Walkthrough
 
-I've failed so far connecting the Moteino, sometimes there was a message, sometimes it failed. it took 15 minutes to get messages from the new backend. It's hard to figure out where the source of error is. Therefore took the RN2482 to figure out how the whole thing works.
+I've failed so far connecting the Moteino, sometimes there was a message, sometimes it failed. it took 15 minutes to get messages from the new backend. It's hard to figure out where the source of error is. Therefore took the RN2483 to figure out how the whole thing works.
 
 ## Hardware and Software
 I'm using this Board from [Microchip](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=dm164138#utm_medium=Press-Release&utm_term=LoRa%20Certification%20&utm_content=WPD&utm_campaign=868MHz) and [CoolTerm](http://freeware.the-meiers.org) to connect to it with with 9600 Baud.
@@ -12,8 +12,8 @@ I'm using this Board from [Microchip](http://www.microchip.com/DevelopmentTools/
 ## Preparation steps
 Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application. My first attempts, joining devices via ABP were kind of unstable. So I've switched to OTAA activation.
 
-## First steps RN2482 and OTAA
-On the RN2482, with ```sys get hweui``` and ```mac get deveui``` you get the devices hweui & deveui (they are probably the same). For this example i've set up a new deveui:
+## First steps RN2483 and OTAA
+On the RN2483, with ```sys get hweui``` and ```mac get deveui``` you get the devices hweui & deveui (they are probably the same). For this example i've set up a new deveui:
 
 ```
 mac set deveui FEEDFEEDFEEDFEED
@@ -107,9 +107,8 @@ And back with the RN2483, you send off a message:
 
 Success!! Moteino is next ... to be continued :)
 
-
 ## Gateway
-Update it often, sometimes, these commands are your friend:
+Update it often, these commands are your friend:
 ```
 ttn@ttn-gateway:~ $ sudo tail -f /var/log/daemon.log                # See what's going on
 ttn@ttn-gateway:~ $ sudo systemctl restart ttn-gateway.service      # Restart the gateway
@@ -117,7 +116,8 @@ ttn@ttn-gateway:~ $ cd ic880a-gateway && sudo ./install.sh spi      # Update the
 ```
 
 
-# Previous guide (outdated with the new backend)
+# The Things Network - Arduino Moteino Lora Walkthrough (Previous guide, outdated with the new backend)
+
 Step by step guide to get the Moteino Lora edition up and running.
 Shopping list:
 
