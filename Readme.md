@@ -1,17 +1,18 @@
 # The Thing Network - Arduino Moteino Lora Walkthrough
 
-Update: with the new backend this is work in progress! I'm trying to figure the whole thing out, this is what works so far.  
+Update: with the new backend this is work in progress!
 
 ## RN2482 and otaa Walkthrough
 
+I've failed so far connecting the Moteino, sometimes there was a message, sometimes it failed. it took 15 minutes to get messages from the new backend. It's hard to figure out where the source of error is. Therefore took the RN2482 to figure out how the whole thing works.
 
 ## Hardware and Software
 I'm using this Board from [Microchip](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=dm164138#utm_medium=Press-Release&utm_term=LoRa%20Certification%20&utm_content=WPD&utm_campaign=868MHz) and [CoolTerm](http://freeware.the-meiers.org) to connect to it with with 9600 Baud.
 
 ## Preparation steps
-Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
+Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application. My first attempts, joining devices via ABP were kind of unstable. So I've switched to OTAA activation.
 
-## First steps RN2482 and otaa
+## First steps RN2482 and OTAA
 On the RN2482, with ```sys get hweui``` and ```mac get deveui``` you get the devices hweui & deveui (they are probably the same). For this example i've set up a new deveui:
 
 ```
@@ -93,9 +94,9 @@ Next, subscribe to the mqtt channel with:
 And back with the RN2483, you send off a message:
 
   ```
-  mac tx uncnf 1 48656c6C6F
-  > ok
-  > mac_tx_ok
+  mac tx cnf 1 48656c6C6F
+  ok
+  mac_rx 1
   ```
   Watch the mqtt channel:
   ```
@@ -104,9 +105,7 @@ And back with the RN2483, you send off a message:
   WARN Sending data as plain text is bad practice. We recommend to transmit data in a binary format. DevEUI=FEEDFEEDFEEDFEED
   ```
 
-Success!! ... to be continued :)
-
-
+Success!! Moteino is next ... to be continued :)
 
 
 ## Gateway
@@ -116,7 +115,6 @@ ttn@ttn-gateway:~ $ sudo tail -f /var/log/daemon.log                # See what's
 ttn@ttn-gateway:~ $ sudo systemctl restart ttn-gateway.service      # Restart the gateway
 ttn@ttn-gateway:~ $ cd ic880a-gateway && sudo ./install.sh spi      # Update the gateway
 ```
-
 
 
 # Previous guide (outdated with the new backend)
