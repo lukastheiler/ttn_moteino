@@ -28,7 +28,7 @@ On the Mac, with the ttnctl tools, I've registered the device with:
 ➜ ttnctl devices info FEEDFEEDFEEDFEED
   Dynamic device:
 
-  AppEUI:  70B3D57ED000005A
+  AppEUI:  YOUR-OWN-APP-EUI
            {0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x00, 0x00, 0x5A}
 
   DevEUI:  FEEDFEEDFEEDFEED
@@ -43,7 +43,7 @@ On the Mac, with the ttnctl tools, I've registered the device with:
 Now set the RN2483's params and connect:
 
   ```
-  mac set appeui 70B3D57ED000005A
+  mac set appeui YOUR-OWN-APP-EUI
   > ok
   mac set appkey 43D00092E5403B30BE844EA4611A8975
   > ok
@@ -58,7 +58,7 @@ Note that now you get a lot more info from ttnctl:
   ➜ ttnctl devices info FEEDFEEDFEEDFEED
     Dynamic device:
 
-    AppEUI:  70B3D57ED000005A
+    AppEUI:  YOUR-OWN-APP-EUI
              {0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x00, 0x00, 0x5A}
 
     DevEUI:  FEEDFEEDFEEDFEED
