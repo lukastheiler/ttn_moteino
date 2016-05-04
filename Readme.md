@@ -128,7 +128,7 @@ Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Ba
 [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
 
 ### First steps
-Register a new device with ttnctl.
+You can check out the modified code is in this repository, [ttn_moteino_new](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_new). To get there, register a new device with ttnctl.
 
   ```
   ➜ ttnctl devices register DEEDDEEDDEEDDEED
@@ -150,7 +150,7 @@ Register a new device with ttnctl.
   ➜  ~
   ```
 
-You can start out with the LMIC's [default ttn script](https://github.com/matthijskooijman/arduino-lmic/blob/master/examples/ttn/ttn.ino), and replace everything from the includes to Hello World with:
+You can start out with the LMIC's [default ttn script](https://github.com/matthijskooijman/arduino-lmic/blob/master/examples/ttn/ttn.ino), replace everything from the includes to Hello World with:
 
 ```
 static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}; // IMPORTANT REVERSE BYTES!
@@ -181,14 +181,16 @@ You need to replace to reorder the bytes for APPEUI and DEVEUI. I hate pointer a
   '0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE'
 ```
 
-Then, comment out the ```LMIC_setSession``` calls, under LMCI init.
+Then, comment out the ```LMIC_setSession``` calls, under LMIC init.
 
 When running the arduino code, I see on the serial monitor:
-```
-Starting
-Packet queued
-181: EV_JOINING
-```
+
+  ```
+  Starting
+  Packet queued
+  181: EV_JOINING
+  ```
+
 And indeed, the activated registered itself:
 
   ```
@@ -220,7 +222,7 @@ And indeed, the activated registered itself:
 
   ```
 
-However, I dont get any message on the backend. So OTAA is no really working ... to be continued
+Sadly, I don't get any message on the backend. So OTAA is no really working ... to be continued
 
 However, now that the device is activated, you can use these parameters for the next part.
 
@@ -244,7 +246,7 @@ You'll also need to attach an antenna. I just took a copper wire of 8.2cm length
 <img src="https://github.com/lukastheiler/ttn_monteino/blob/master/images/antenna.jpg" height="50%" width="50%">
 
 # Arduino code
-I started out with this repository https://github.com/matthijskooijman/arduino-lmic which made the IBM LIC library availbably to arduino. The arduino code is in this git repository.
+I started out with this repository https://github.com/matthijskooijman/arduino-lmic which made the IBM LIC library availbably to arduino. The arduino code is in this git repository [ttn_moteino](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino).
 
 ## Changes
 
@@ -311,29 +313,29 @@ The username is the EUI and the password is the Access Key you get from ```ttnct
 
 Lastly, you can easily write your own mqtt script, an example is in this repository - which also decrypts the payload.
 
-```
-➜ node mqtt.js
-  [0] Wed May 04 2016 16:57:37 GMT+0200 (CEST) from 70B3D57ED000005A/devices/DEEDDEEDDEEDDEED/up
-  { payload: 'QXJkdWlubyBjb3VudD0xMg==',
-    port: 1,
-    counter: 12,
-    dev_eui: 'DEEDDEEDDEEDDEED',
-    metadata:
-     [ { frequency: 868.3,
-         datarate: 'SF7BW125',
-         codingrate: '4/5',
-         gateway_timestamp: 1316115947,
-         gateway_time: '2016-05-04T14:57:36.691644176Z',
-         channel: 1,
-         server_time: '2016-05-04T14:57:36.617581478Z',
-         rssi: -25,
-         lsnr: 10.2,
-         rfchain: 1,
-         crc: 1,
-         modulation: 'LORA',
-         gateway_eui: 'B827EBFFFEC7F595',
-         altitude: 599,
-         longitude: 8.45709,
-         latitude: 47.37367 } ],
-    payload_decrypted: 'Arduino count=12' }
-```
+  ```
+  ➜ node mqtt.js
+    [0] Wed May 04 2016 16:57:37 GMT+0200 (CEST) from 70B3D57ED000005A/devices/DEEDDEEDDEEDDEED/up
+    { payload: 'QXJkdWlubyBjb3VudD0xMg==',
+      port: 1,
+      counter: 12,
+      dev_eui: 'DEEDDEEDDEEDDEED',
+      metadata:
+       [ { frequency: 868.3,
+           datarate: 'SF7BW125',
+           codingrate: '4/5',
+           gateway_timestamp: 1316115947,
+           gateway_time: '2016-05-04T14:57:36.691644176Z',
+           channel: 1,
+           server_time: '2016-05-04T14:57:36.617581478Z',
+           rssi: -25,
+           lsnr: 10.2,
+           rfchain: 1,
+           crc: 1,
+           modulation: 'LORA',
+           gateway_eui: 'B827EBFFFEC7F595',
+           altitude: 599,
+           longitude: 8.45709,
+           latitude: 47.37367 } ],
+      payload_decrypted: 'Arduino count=12' }
+  ```
