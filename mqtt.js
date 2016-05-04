@@ -1,23 +1,22 @@
 var mqtt = require('mqtt');
 
-var client = mqtt.connect('tcp://croft.thethings.girovito.nl:1883');
-// nodes/5A480881/packets
-// gateways/B827EBFFFEC7F595/status
+// The username is the EUI and the password is the Access Key you get from `ttnctl applications`
+var client = mqtt.connect('tcp://staging.thethingsnetwork.org:1883',
+              { username: 'xxxxxx',
+                password: 'xxxxxx'
+              });
 
 var i=0;
 
 client.on('connect', function () {
-    nodes=['nodes/FEEDBEEF/packets'];
-    nodes.forEach(n => {
-    	   console.log("connected, subscribed "+n);
-       	 client.subscribe(n);
-        })
+  client.subscribe("+/devices/+/up");
 });
 
-client.on('message', function (topic, message) {
+client.on('message', function (topic, buffer) {
   console.log("["+i+"] "+new Date()+" from "+topic.toString());
-  var msg = JSON.parse(message);
-  msg.data=new Buffer(msg.data, 'base64').toString('ascii')
-  console.log(msg);
+  var data=new Buffer(buffer, 'base64').toString('ascii')
+  var message = JSON.parse(data);
+  message.payload_decrypted=new Buffer(message.payload, 'base64').toString('ascii')
+  console.log(message);
   ++i;
 });
