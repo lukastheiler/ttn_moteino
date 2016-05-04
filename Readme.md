@@ -6,13 +6,13 @@ Update: with the new backend, this is work in progress!
 
 I've failed so far connecting the Moteino, sometimes there was a message, sometimes it failed. it took 15 minutes to get messages from the new backend. It's hard to figure out where the source of error is. Therefore took the RN2483 to figure out how the whole thing works.
 
-## Hardware and Software
+### Hardware and Software
 I'm using this Board from [Microchip](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=dm164138#utm_medium=Press-Release&utm_term=LoRa%20Certification%20&utm_content=WPD&utm_campaign=868MHz) and [CoolTerm](http://freeware.the-meiers.org) to connect to it with with 9600 Baud.
 
-## Preparation steps
+### Preparation steps
 Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application. My first attempts, joining devices via ABP were kind of unstable. So I've switched to OTAA activation.
 
-## First steps RN2483 and OTAA
+### First steps RN2483 and OTAA
 On the RN2483, with ```sys get hweui``` and ```mac get deveui``` you get the devices hweui & deveui (they are probably the same). For this example i've set up a new deveui:
 
 ```
@@ -109,7 +109,7 @@ Watch the mqtt channel:
 
 Success!! Moteino is next ... to be continued :)
 
-## Gateway
+### Gateway
 Update it often, these commands are your friend:
 ```
 ttn@ttn-gateway:~ $ sudo tail -f /var/log/daemon.log                # See what's going on
@@ -117,23 +117,23 @@ ttn@ttn-gateway:~ $ sudo systemctl restart ttn-gateway.service      # Restart th
 ttn@ttn-gateway:~ $ cd ic880a-gateway && sudo ./install.sh spi      # Update the gateway
 ```
 
-## RN2483 and OTAA Walkthrough (WIP)
+## Moteino, LMIC and OTAA Walkthrough (WIP)
 
-This is bleeding edge. There's some info on the ttn forum http://forum.thethingsnetwork.org/t/over-the-air-activation-otaa-with-lmic/1921/11 , but i couldn't manage it yet. My current source code is in this repository under ttn_moteino_new.
+This is bleeding edge. There's some info on the ttn forum http://forum.thethingsnetwork.org/t/over-the-air-activation-otaa-with-lmic/1921/11 , but I couldn't manage to get messages through yet. My current source code is in this repository under ttn_moteino_new.
 
-## Preparation steps
+### Preparation steps
 Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
 
-## Hardware and Software
-[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's (port of the LMIC library)[https://github.com/matthijskooijman/arduino-lmic].
+### Hardware and Software
+[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
 
-## First steps
+### First steps
 Register a new device with ttnctl.
 
   ```
   ➜ ttnctl devices register DEEDDEEDDEEDDEED
     INFO Generating random AppKey...
-    INFO Registered device                        AppKey=94F00F5C07C2F536438600A54CAFF740 DevEUI=DEEDDEEDDEEDDEED
+    INFO Registered device AppKey=94F00F5C07C2F536438600A54CAFF740 DevEUI=DEEDDEEDDEEDDEED
   ➜ ttnctl devices info DEEDDEEDDEEDDEED
     Dynamic device:
 
@@ -172,11 +172,13 @@ void os_getDevKey (u1_t* buf) {
   memcpy(buf, APPKEY, 16);
 }
 ```
+
 You need to replace to reorder the bytes for APPEUI and DEVEUI. I hate pointer arithmetics, so I just use this node oneliner:
+
 ```
 ➜  node
 > '0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED'.split(', ').reverse().join(', ')
-'0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE'
+  '0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE'
 ```
 
 Then, comment out the ```LMIC_setSession``` calls, under LMCI init.
