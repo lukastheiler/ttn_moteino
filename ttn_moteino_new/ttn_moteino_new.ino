@@ -25,7 +25,7 @@
 #include <hal/hal.h>
 #include <SPI.h>
 
-static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__};
+static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}; // YOUR APPEUI KEY
 static const u1_t DEVEUI[8]  = {0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE};
 static const u1_t APPKEY[16] = {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40};
 
@@ -49,7 +49,7 @@ static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 10;
+const unsigned TX_INTERVAL = 20;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
@@ -77,6 +77,7 @@ void onEvent (ev_t ev) {
       break;
     case EV_JOINING:
       Serial.println(F("EV_JOINING"));
+      os_setTimedCallback(&sendjob, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
       break;
     case EV_JOINED:
       Serial.println(F("EV_JOINED"));
@@ -126,51 +127,40 @@ void onEvent (ev_t ev) {
 }
 
 void do_send(osjob_t* j) {
+    osjob_t initjob;
+
   // Check if there is not a current TX/RX job running
   if (LMIC.opmode & OP_TXRXPEND) {
     Serial.println(F("OP_TXRXPEND, not sending"));
   } else {
     // Prepare upstream data transmission at the next possible time.
-    LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 0);
+    LMIC_setTxData2(1, mydata, sizeof(mydata) - 1, 1);
     Serial.println(F("Packet queued"));
   }
   // Next TX is scheduled after TX_COMPLETE event.
   // os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
+  os_setCallback(&initjob, initfunc);
 
 }
 
+// initial job
+static void initfunc (osjob_t* j) {
+    // reset MAC state
+    LMIC_reset();
+    // start joining
+    LMIC_startJoining();
+    // init done - onEvent() callback will be invoked...
+}
+
 void setup() {
+  osjob_t initjob;
   Serial.begin(115200);
   Serial.println(F("Starting"));
-
-#ifdef VCC_ENABLE
-  // For Pinoccio Scout boards
-  pinMode(VCC_ENABLE, OUTPUT);
-  digitalWrite(VCC_ENABLE, HIGH);
-  delay(1000);
-#endif
-
   // LMIC init
   os_init();
   // Reset the MAC state. Session and pending data transfers will be discarded.
-  LMIC_reset();
-  /*
-      // Set static session parameters. Instead of dynamically establishing a session
-      // by joining the network, precomputed session parameters are be provided.
-      #ifdef PROGMEM
-      // On AVR, these values are stored in flash and only copied to RAM
-      // once. Copy them to a temporary buffer here, LMIC_setSession will
-      // copy them into a buffer of its own again.
-      uint8_t appskey[sizeof(APPSKEY)];
-      uint8_t nwkskey[sizeof(NWKSKEY)];
-      memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
-      memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
-      LMIC_setSession (0x1, DEVADDR, nwkskey, appskey);
-      #else
-      // If not running an AVR with PROGMEM, just use the arrays directly
-      LMIC_setSession (0x1, DEVADDR, NWKSKEY, APPSKEY);
-      #endif
-  */
+  os_setCallback(&initjob, initfunc);
+ 
   // Set up the channels used by the Things Network, which corresponds
   // to the defaults of most gateways. Without this, only three base
   // channels from the LoRaWAN specification are used, which certainly
@@ -179,6 +169,7 @@ void setup() {
   // your network here (unless your network autoconfigures them).
   // Setting up channels should happen after LMIC_setSession, as that
   // configures the minimal channel set.
+  /*
   LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
   LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
   LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
@@ -199,8 +190,10 @@ void setup() {
   // Set data rate and transmit power (note: txpow seems to be ignored by the library)
   LMIC_setDrTxpow(DR_SF7, 14);
 
+   */
+       os_runloop();
   // Start job
-  do_send(&sendjob);
+  // do_send(&sendjob);
 }
 
 void loop() {
