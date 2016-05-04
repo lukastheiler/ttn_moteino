@@ -60,7 +60,7 @@ Note that now you get a lot more info from ttnctl:
     Dynamic device:
 
     AppEUI:  YOUR-OWN-APP-EUI
-             {0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x00, 0x00, 0x5A}
+             {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
 
     DevEUI:  FEEDFEEDFEEDFEED
              {0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED}
@@ -116,6 +116,111 @@ ttn@ttn-gateway:~ $ sudo tail -f /var/log/daemon.log                # See what's
 ttn@ttn-gateway:~ $ sudo systemctl restart ttn-gateway.service      # Restart the gateway
 ttn@ttn-gateway:~ $ cd ic880a-gateway && sudo ./install.sh spi      # Update the gateway
 ```
+
+## RN2483 and OTAA Walkthrough (WIP)
+
+This is bleeding edge. There's some info on the ttn forum http://forum.thethingsnetwork.org/t/over-the-air-activation-otaa-with-lmic/1921/11 , but i couldn't manage it yet. My current source code is in this repository under ttn_moteino_new.
+
+## Preparation steps
+Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
+
+## Hardware and Software
+[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's (port of the LMIC library)[https://github.com/matthijskooijman/arduino-lmic].
+
+## First steps
+Register a new device with ttnctl.
+
+  ```
+  ➜ ttnctl devices register DEEDDEEDDEEDDEED
+    INFO Generating random AppKey...
+    INFO Registered device                        AppKey=94F00F5C07C2F536438600A54CAFF740 DevEUI=DEEDDEEDDEEDDEED
+  ➜ ttnctl devices info DEEDDEEDDEEDDEED
+    Dynamic device:
+
+    AppEUI:  YOUR-OWN-APP-EUI
+             {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
+
+    DevEUI:  DEEDDEEDDEEDDEED
+             {0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED}
+
+    AppKey:  94F00F5C07C2F536438600A54CAFF740
+             {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40}
+
+    Not yet activated
+  ➜  ~
+  ```
+
+You can start out with the LMIC's [default ttn script](https://github.com/matthijskooijman/arduino-lmic/blob/master/examples/ttn/ttn.ino), and replace everything from the includes to Hello World with:
+
+```
+static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}; // IMPORTANT REVERSE BYTES!
+static const u1_t DEVEUI[8]  = {0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE}; // IMPORTANT REVERSE BYTES!
+static const u1_t APPKEY[16] = {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40};
+
+// provide APPEUI (8 bytes, LSBF)
+void os_getArtEui (u1_t* buf) {
+  memcpy(buf, APPEUI, 8);
+}
+
+// provide DEVEUI (8 bytes, LSBF)
+void os_getDevEui (u1_t* buf) {
+  memcpy(buf, DEVEUI, 8);
+}
+
+// provide APPKEY key (16 bytes)
+void os_getDevKey (u1_t* buf) {
+  memcpy(buf, APPKEY, 16);
+}
+```
+You need to replace to reorder the bytes for APPEUI and DEVEUI. I hate pointer arithmetics, so I just use this node oneliner:
+```
+➜  node
+> '0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED'.split(', ').reverse().join(', ')
+'0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE'
+```
+
+Then, comment out the ```LMIC_setSession``` calls, under LMCI init.
+
+When running the arduino code, I see on the serial monitor:
+```
+Starting
+Packet queued
+181: EV_JOINING
+```
+And indeed, the activated registered itself:
+
+  ```
+  ➜ ttnctl devices info DEEDDEEDDEEDDEED
+  Dynamic device:
+
+  AppEUI:  YOUR-OWN-APP-EUI
+           {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
+
+  DevEUI:  DEEDDEEDDEEDDEED
+           {0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED}
+
+  AppKey:  94F00F5C07C2F536438600A54CAFF740
+           {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40}
+
+  Activated with the following parameters:
+
+  DevAddr: 1D2E0041
+           {0x1D, 0x2E, 0x00, 0x41}
+
+  NwkSKey: FFF0B4BB9E765AA15F60115F04A0CCC7
+           {0xFF, 0xF0, 0xB4, 0xBB, 0x9E, 0x76, 0x5A, 0xA1, 0x5F, 0x60, 0x11, 0x5F, 0x04, 0xA0, 0xCC, 0xC7}
+
+  AppSKey: AB876E772079FDFDD320A3E3DB1A3D41
+           {0xAB, 0x87, 0x6E, 0x77, 0x20, 0x79, 0xFD, 0xFD, 0xD3, 0x20, 0xA3, 0xE3, 0xDB, 0x1A, 0x3D, 0x41}
+
+  FCntUp:  0
+  FCntDn:  0
+
+  ```
+
+However, I dont get any message on the backend.
+
+... to be continued
 
 
 # The Things Network - Arduino Moteino Lora Walkthrough (Previous guide, outdated with the new backend)
