@@ -220,12 +220,11 @@ And indeed, the activated registered itself:
 
   ```
 
-However, I dont get any message on the backend.
+However, I dont get any message on the backend. So OTAA is no really working ... to be continued
 
-... to be continued
+However, now that the device is activated, you can use these parameters for the next part.
 
-
-# The Things Network - Arduino Moteino Lora Walkthrough (Previous guide, outdated with the new backend)
+## Arduino Moteino Lora Walkthrough with ABP
 
 Step by step guide to get the Moteino Lora edition up and running.
 Shopping list:
@@ -262,11 +261,15 @@ I started out with this repository https://github.com/matthijskooijman/arduino-l
   ```
 
 * **Node Device address**.
-```static const u4_t DEVADDR = 0xFEEDBEEF```, the addresses are non-inique.
-Check the [address space] (http://staging.thethingsnetwork.org/wiki/Legacy/AddressSpace)
+  Insert parameters DevAddr, NwkSKey and AppSKey form an activated device, e.g. ttnctl devices info DEEDDEEDDEEDDEED from the example above:
+  ```
+  static const PROGMEM u1_t NWKSKEY[16] = { 0x6A, 0xE2, 0x0C, 0xB2, 0x21, 0x91, 0xF5, 0x15, 0x6F, 0x23, 0xAF, 0xB9, 0x0D, 0x90, 0x5E, 0x62 };
+  static const u1_t PROGMEM APPSKEY[16] = { 0x25, 0x0A, 0x37, 0xC2, 0x36, 0xCE, 0x95, 0xE3, 0x0F, 0x8D, 0x60, 0x35, 0x23, 0x98, 0x3C, 0x4E };
+  static const u4_t DEVADDR = 0x1C376CC8 ;
+  ```
 
 * **The message**.
-I just submit the current counter. Basically, this is where you'd collect and send the sensor data.
+  I just submit the current counter. Basically, this is where you'd collect and send the sensor data.
   ```
   byte buffer[32];
   int counter = 0;
@@ -286,22 +289,51 @@ I just submit the current counter. Basically, this is where you'd collect and se
 
 # Results
 
-## On Things Newtork
-Go check your result using the thingsnetwork restful api: http://thethingsnetwork.org/api/v0/nodes/FEEDBEEF/
-
 ## Using mqtt
-Check out the mqtt script in this respository, and you get all messages in mqtt, e.g:
+
+You can use ```ttnctl subscribe``` to see the activity on your application. The messages should pop up like this:
+
+  ```
+  ➜ ttnctl subscribe 70B3D57ED000005A
+  INFO Subscribing uplink messages from device p��~�Z
+  INFO Subscribed. Waiting for messages...
+  INFO 61DE274033F972198377F19BF223D927         DevEUI=DEEDDEEDDEEDDEED
+  INFO D0BCF85163B528BC9EB4A57F3C7F6B68         DevEUI=DEEDDEEDDEEDDEED
+  ```
+
+Or, you take mosquitto :
+
+   ```
+   ➜ mosquitto_sub -h staging.thethingsnetwork.org -p 1883 -t +/devices/+/up -u USERNAME -P PASSWORD
+   ```
+
+The username is the EUI and the password is the Access Key you get from ```ttnctl applications```
+
+Lastly, you can easily write your own mqtt script, an example is in this repository - which also decrypts the payload.
+
 ```
-➜  ttn_monteino git:(master) ✗ node mqtt.js
-connected, subscribed nodes/FEEDBEEF/packets
-[1] Sun Apr 17 2016 20:13:13 GMT+0200 (CEST) from nodes/FEEDBEEF/packets
-{ gatewayEui: 'B827EBFFFEC7F595',
-  nodeEui: 'FEEDBEEF',
-  time: '2016-04-17T18:13:13.505977494Z',
-  frequency: 867.1,
-  dataRate: 'SF7BW125',
-  rssi: -41,
-  snr: 10.8,
-  rawData: 'QO3+SFqACwAButTT0jE9kHKoTrV+ObIHEQe2Zhc=',
-  data: 'Arduino count=11' }
+➜ node mqtt.js
+  [0] Wed May 04 2016 16:57:37 GMT+0200 (CEST) from 70B3D57ED000005A/devices/DEEDDEEDDEEDDEED/up
+  { payload: 'QXJkdWlubyBjb3VudD0xMg==',
+    port: 1,
+    counter: 12,
+    dev_eui: 'DEEDDEEDDEEDDEED',
+    metadata:
+     [ { frequency: 868.3,
+         datarate: 'SF7BW125',
+         codingrate: '4/5',
+         gateway_timestamp: 1316115947,
+         gateway_time: '2016-05-04T14:57:36.691644176Z',
+         channel: 1,
+         server_time: '2016-05-04T14:57:36.617581478Z',
+         rssi: -25,
+         lsnr: 10.2,
+         rfchain: 1,
+         crc: 1,
+         modulation: 'LORA',
+         gateway_eui: 'B827EBFFFEC7F595',
+         altitude: 599,
+         longitude: 8.45709,
+         latitude: 47.37367 } ],
+    payload_decrypted: 'Arduino count=12' }
 ```
