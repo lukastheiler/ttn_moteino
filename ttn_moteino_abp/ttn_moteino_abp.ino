@@ -1,23 +1,35 @@
 /*******************************************************************************
-   Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
+  Original script is Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
 
-   Permission is hereby granted, free of charge, to anyone
-   obtaining a copy of this document and accompanying files,
-   to do whatever they want with them without any restriction,
-   including, but not limited to, copying, modification and redistribution.
-   NO WARRANTY OF ANY KIND IS PROVIDED.
+  STEPS
+  
+  1) ➜ ttnctl devices register personalized FEEDBEEF
+  INFO Generating random NwkSKey and AppSKey...
+  INFO Registered personalized device AppSKey=575BA7FACB7922AE444BE50E325E1A5E DevAddr=FEEDBEEF Flags=0 NwkSKey=DCD0F771A7291D4291BFB641C280D5B7
+  ➜  ttn_moteino git:(master) ✗ ttnctl devices info FEEDBEEF
+  Personalized device:
 
-   This example sends a valid LoRaWAN packet with payload "Hello,
-   world!", using frequency and encryption settings matching those of
-   the (early prototype version of) The Things Network.
+  DevAddr: FEEDBEEF
+           {0xFE, 0xED, 0xBE, 0xEF}
 
-   Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in g1,
-    0.1% in g2).
+  NwkSKey: DCD0F771A7291D4291BFB641C280D5B7
+           {0xDC, 0xD0, 0xF7, 0x71, 0xA7, 0x29, 0x1D, 0x42, 0x91, 0xBF, 0xB6, 0x41, 0xC2, 0x80, 0xD5, 0xB7}
 
-   Change DEVADDR to a unique address!
-   See http://thethingsnetwork.org/wiki/AddressSpace
+  AppSKey:  575BA7FACB7922AE444BE50E325E1A5E
+           {0x57, 0x5B, 0xA7, 0xFA, 0xCB, 0x79, 0x22, 0xAE, 0x44, 0x4B, 0xE5, 0x0E, 0x32, 0x5E, 0x1A, 0x5E}
 
-   Do not forget to define the radio type correctly in config.h.
+  FCntUp:  0
+  FCntDn:  0
+
+  Flags:   -
+
+  2) Insert the keys below & run this script
+
+  3) monitor with ttnctl subscribe
+  ➜  Downloads ttnctl subscribe
+  INFO Subscribing to uplink messages from all devices in application 70B3D57ED000005A
+  INFO Subscribed. Waiting for messages...
+  INFO 436F756E743D34                           DevEUI=00000000AFFE2803
 
  *******************************************************************************/
 
@@ -26,12 +38,12 @@
 #include <SPI.h>
 
 // LoRaWAN NwkSKey, network session key
-// Get these keys from an activated device using: 
+// Get these keys from an activated device using:
 // ttnctl devices info <DEVICE>
-// 
-static const u4_t DEVADDR = 0x1C5055EB; 
-static const u1_t PROGMEM NWKSKEY[16] = { 0x0F, 0x0D, 0x2D, 0x38, 0xAA, 0x05, 0x0B, 0xFB, 0xFE, 0x5F, 0x42, 0xC5, 0x91, 0x56, 0x89, 0x63 };
-static const u1_t PROGMEM APPSKEY[16] = { 0x59, 0xE7, 0xEE, 0xAA, 0x74, 0x63, 0x94, 0x8F, 0xC8, 0x44, 0xA4, 0x8D, 0xE7, 0x0D, 0xD7, 0x07 };
+//
+static const u4_t DEVADDR = 0xAFFE2803;
+static const u1_t PROGMEM NWKSKEY[16] = { 0xCC, 0xDF, 0x44, 0xF1, 0x1E, 0xF5, 0x8E, 0xCE, 0x20, 0xC8, 0x19, 0x0E, 0x12, 0xFD, 0x0B, 0x50 };
+static const u1_t PROGMEM APPSKEY[16] = { 0x5F, 0xED, 0x1A, 0xB5, 0x84, 0x86, 0x08, 0x06, 0x29, 0xD2, 0x96, 0x18, 0x96, 0xA3, 0x78, 0x2F };
 
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
@@ -80,7 +92,7 @@ void onEvent (ev_t ev) {
 byte buffer[32];
 int counter = 0;
 void do_send(osjob_t* j) {
-  String message = "Arduino count=" + String(counter);
+  String message = "Count=" + String(counter);
   message.getBytes(buffer, message.length()+1);
   counter++;
   Serial.println("Sending: "+message);

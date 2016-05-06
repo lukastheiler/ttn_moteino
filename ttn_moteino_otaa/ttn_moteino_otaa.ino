@@ -1,23 +1,56 @@
 /*******************************************************************************
-   Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
+ Original script is Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
 
-   Permission is hereby granted, free of charge, to anyone
-   obtaining a copy of this document and accompanying files,
-   to do whatever they want with them without any restriction,
-   including, but not limited to, copying, modification and redistribution.
-   NO WARRANTY OF ANY KIND IS PROVIDED.
+ WORK IN PROGRESS!
 
-   This example sends a valid LoRaWAN packet with payload "Hello,
-   world!", using frequency and encryption settings matching those of
-   the (early prototype version of) The Things Network.
+ 1) ttnctl devices register FEEDFEEDFEEDFEED
+  INFO Generating random AppKey...
+  INFO Registered device AppKey=43D00092E5403B30BE844EA4611A8975 DevEUI=FEEDFEEDFEEDFEED
 
-   Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in g1,
-    0.1% in g2).
+ 2) ➜  ~ ttnctl devices info FEEDFEEDFEEDFEED
+  Dynamic device:
+  AppEUI:  YOUR-OWN-APP-EUI
+           {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
 
-   Change DEVADDR to a unique address!
-   See http://thethingsnetwork.org/wiki/AddressSpace
+  DevEUI:  FEEDFEEDFEEDFEED
+           {0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED}
 
-   Do not forget to define the radio type correctly in config.h.
+  AppKey:  43D00092E5403B30BE844EA4611A8975
+           {0x43, 0xD0, 0x00, 0x92, 0xE5, 0x40, 0x3B, 0x30, 0xBE, 0x84, 0x4E, 0xA4, 0x61, 0x1A, 0x89, 0x75}
+
+  Not yet activated
+
+
+  3) Run this code
+  --> 161: EV_JOINING
+
+  4) Serial is stuck at "EV_JOINING" but the device activated
+
+  ➜  ~ ttnctl devices info FEEDFEEDFEEDFEED
+  Dynamic device:
+
+  AppEUI:  YOUR-OWN-APP-EUI
+           {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
+
+  DevEUI:  FEEDFEEDFEEDFEED
+           {0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED}
+
+  AppKey:  43D00092E5403B30BE844EA4611A8975
+           {0x43, 0xD0, 0x00, 0x92, 0xE5, 0x40, 0x3B, 0x30, 0xBE, 0x84, 0x4E, 0xA4, 0x61, 0x1A, 0x89, 0x75}
+
+  Activated with the following parameters:
+
+  DevAddr: 1C8E183A
+           {0x1C, 0x8E, 0x18, 0x3A}
+
+  NwkSKey: B1F40292A947DDAD35796AC52283D074
+           {0xB1, 0xF4, 0x02, 0x92, 0xA9, 0x47, 0xDD, 0xAD, 0x35, 0x79, 0x6A, 0xC5, 0x22, 0x83, 0xD0, 0x74}
+
+  AppSKey:  25E9217763C2C7432F619CEA67B659AF
+           {0x25, 0xE9, 0x21, 0x77, 0x63, 0xC2, 0xC7, 0x43, 0x2F, 0x61, 0x9C, 0xEA, 0x67, 0xB6, 0x59, 0xAF}
+
+  FCntUp:  0
+
 
  *******************************************************************************/
 
@@ -25,9 +58,9 @@
 #include <hal/hal.h>
 #include <SPI.h>
 
-static const u1_t APPEUI[8]  = {0x5A, 0x00, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70}; // YOUR APPEUI KEY
-static const u1_t DEVEUI[8]  = {0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE};
-static const u1_t APPKEY[16] = {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40};
+static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}; // REVERSE ORDER
+static const u1_t DEVEUI[8]  = {0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED, 0xFE, 0xED}; // REVERSE ORDER
+static const u1_t APPKEY[16] = {0x43, 0xD0, 0x00, 0x92, 0xE5, 0x40, 0x3B, 0x30, 0xBE, 0x84, 0x4E, 0xA4, 0x61, 0x1A, 0x89, 0x75};
 
 // provide APPEUI (8 bytes, LSBF)
 void os_getArtEui (u1_t* buf) {
@@ -139,7 +172,7 @@ void do_send(osjob_t* j) {
   }
   // Next TX is scheduled after TX_COMPLETE event.
   // os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
-  os_setCallback(&initjob, initfunc);
+  // os_setCallback(&initjob, initfunc);
 
 }
 
@@ -160,7 +193,7 @@ void setup() {
   os_init();
   // Reset the MAC state. Session and pending data transfers will be discarded.
   os_setCallback(&initjob, initfunc);
- 
+
   // Set up the channels used by the Things Network, which corresponds
   // to the defaults of most gateways. Without this, only three base
   // channels from the LoRaWAN specification are used, which certainly
