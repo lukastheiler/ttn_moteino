@@ -361,7 +361,7 @@ Update it often, these commands are your friend:
 Update it often, it gets updated quite frequently. I check it on a daily basis.
 
 ## Payload and messages
-I've noticed that the same payload can gets ignore, when I've sent it again. E.g.:
+I've noticed that sending the same payload is ignored sometimes. E.g.:
 - Count=0 (sent & received)
 - Count=1 (sent & received)
 - Reboot Moteino
