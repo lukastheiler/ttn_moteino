@@ -3,8 +3,11 @@
 This guide has been modified for the new staging backend, and has the following sections:
 
 1) Moteino, LMIC and ABP Walkthrough
+
 2) RN2483 and OTAA Walkthrough
+
 3) Moteino, LMIC and OTAA Walkthrough (work in progress)
+
 4) Misc, tips, tricks, lessons learned
 
 # Moteino, LMIC and ABP Walkthrough
