@@ -4,13 +4,13 @@ This guide has been modified for the new staging backend, and has the following 
 
 1) Moteino, LMIC and ABP Walkthrough
 
-2) RN2483 and OTAA Walkthrough
+2) Moteino, LMIC and OTAA Walkthrough
 
-3) Moteino, LMIC and OTAA Walkthrough (work in progress)
+3) RN2483 and OTAA Walkthrough
 
 4) Misc, tips, tricks, lessons learned
 
-# Moteino, LMIC and ABP Walkthrough
+# 1) Moteino, LMIC and ABP Walkthrough
 
 This step by step guide should get you up and running with the Moteino Lora edition & The Things Network. Shopping list:
 
@@ -55,6 +55,8 @@ And check the status
   Flags:   -
   ```
 
+We need these keys to send messages from the Moteino to the Things Network.
+
 ## Arduino code
 I started out with this repository https://github.com/matthijskooijman/arduino-lmic which made the IBM LIC library availbably to arduino. The arduino code is in this git repository [ttn_moteino_abp](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_abp).
 
@@ -83,6 +85,7 @@ I started out with this repository https://github.com/matthijskooijman/arduino-l
 
 * **The message**.
   I just submit the current counter. Basically, this is where you'd collect and send the sensor data.
+
   ```
   byte buffer[32];
   int counter = 0;
@@ -95,21 +98,20 @@ I started out with this repository https://github.com/matthijskooijman/arduino-l
     LMIC_setTxData2(1, (uint8_t*) buffer, message.length() , 0);
   }
   ```
-  Important: check the below remarks on resending the same payload.
+
+  Important: check the remarks in the [Misc](https://github.com/lukastheiler/ttn_moteino#payload-and-messages) section on resending the same payload.
 
 * **Resend interval**.
  ```const unsigned TX_INTERVAL = 180;```
  The [ttn fair access policy](http://forum.thethingsnetwork.org/t/limitations-data-rate-packet-size-30-seconds-day-fair-access-policy-nodes-per-gateway/1300) allows 30s/day and node. Which translates to roughly 1 message every 3 mins. If you send too many, the gateway stops accepting messages (at least I believe so, when I wrote this there were quite some changes to ttn, which could have influenced my findings). If you don't get any messages anymore, consider switching the node address, or restart your gateway with ```sudo systemctl start ttn-gateway.service```.
 
-# Results
-
-## Using mqtt
+## Results
 
 You can use ```ttnctl subscribe``` to see the activity on your application. The messages should pop up like this:
 
   ```
   ➜ ttnctl subscribe
-  INFO Subscribing uplink messages from device p��~�Z
+  INFO Subscribing uplink messages from device ...
   INFO Subscribed. Waiting for messages...
   INFO 436F756E743D34                           DevEUI=00000000AFFE2803
   INFO 436F756E743D35                           DevEUI=00000000AFFE2803
@@ -127,7 +129,7 @@ Lastly, you can easily write your own mqtt script, an example is in this reposit
 
   ```
   ➜ node mqtt.js
-  [52] Fri May 06 2016 11:36:43 GMT+0200 (CEST) from 70B3D57ED000005A/devices/00000000AFFE2803/up
+  [52] Fri May 06 2016 11:36:43 GMT+0200 (CEST) from +/devices/00000000AFFE2803/up
   { payload: 'Q291bnQ9MjQ=',
     port: 1,
     counter: 24,
@@ -152,12 +154,111 @@ Lastly, you can easily write your own mqtt script, an example is in this reposit
     payload_decrypted: 'Count=24' }
   ```
 
-# RN2483 and OTAA Walkthrough
+# 2) Moteino, LMIC and OTAA Walkthrough
 
-To figure out the whole OTAA stuff, I've taken out my RN2483 board and could successfully connect, send & receive messages.
+I've finally figured that one out thanks to the guys on the ttn forum http://forum.thethingsnetwork.org/t/over-the-air-activation-otaa-with-lmic/1921/11. My current source code is in this repository under [ttn_moteino_otaa](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_otaa).
+
+## Preparation steps
+Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
 
 ## Hardware and Software
-I'm using this Board from [Microchip](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=dm164138#utm_medium=Press-Release&utm_term=LoRa%20Certification%20&utm_content=WPD&utm_campaign=868MHz) and [CoolTerm](http://freeware.the-meiers.org) to connect to it with with 9600 Baud.
+[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
+
+## TTN setup
+Register a new device with ttnctl.
+
+  ```
+  ➜ ttnctl devices register DEEDDEEDDEEDDEED
+    INFO Generating random AppKey...
+    INFO Registered device AppKey=94F00F5C07C2F536438600A54CAFF740 DevEUI=DEEDDEEDDEEDDEED
+  ➜ ttnctl devices info DEEDDEEDDEEDDEED
+    Dynamic device:
+    AppEUI:  YOUR-OWN-APP-EUI
+             {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
+    DevEUI:  DEEDDEEDDEEDDEED
+             {0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED}
+    AppKey:  94F00F5C07C2F536438600A54CAFF740
+             {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40}
+    Not yet activated
+  ➜  ~
+  ```
+
+## Arduino code
+
+You can check out the modified code is in this repository, [ttn_moteino_otaa](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_otaa).
+To get there, I started out with the LMIC's [default ttn script](https://github.com/matthijskooijman/arduino-lmic/blob/master/examples/ttn/ttn.ino), replace everything from the includes to Hello World with:
+
+  ```
+  static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}; // IMPORTANT REVERSE BYTES!
+  static const u1_t DEVEUI[8]  = {0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE}; // IMPORTANT REVERSE BYTES!
+  static const u1_t APPKEY[16] = {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40};
+
+  // provide APPEUI (8 bytes, LSBF)
+  void os_getArtEui (u1_t* buf) {
+    memcpy(buf, APPEUI, 8);
+  }
+
+  // provide DEVEUI (8 bytes, LSBF)
+  void os_getDevEui (u1_t* buf) {
+    memcpy(buf, DEVEUI, 8);
+  }
+
+  // provide APPKEY key (16 bytes)
+  void os_getDevKey (u1_t* buf) {
+    memcpy(buf, APPKEY, 16);
+  }
+  ```
+
+You need to replace the order of the the bytes for APPEUI and DEVEUI. I hate pointer arithmetics, so I just use this node oneliner:
+
+  ```
+  ➜  node
+  > '0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED'.split(', ').reverse().join(', ')
+    '0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE'
+  ```
+
+Then, comment out the ```LMIC_setSession``` calls, under LMIC init.  
+
+If you run the script, be very, very patient - it takes anywhere from 1-15 minutes to get the payload sent.
+
+  ```
+  Starting
+  202: EV_JOINING
+  758145: EV_JOINED
+  Packet queued
+  2078749: EV_TXCOMPLETE (includes waiting for RX windows)
+  ```
+
+Eventually, you can check if the device is activated:
+
+  ```
+  ➜ ttnctl devices info DEEDDEEDDEEDDEED
+  Dynamic device:
+  AppEUI:  YOUR-OWN-APP-EUI
+           {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
+  DevEUI:  DEEDDEEDDEEDDEED
+           {0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED}
+  AppKey:  94F00F5C07C2F536438600A54CAFF740
+           {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40}
+  Activated with the following parameters:
+  DevAddr: 1C5055EB
+           {0x1C, 0x50, 0x55, 0xEB}
+  NwkSKey: 0F0D2D38AA050BFBFE5F42C591568963
+           {0x0F, 0x0D, 0x2D, 0x38, 0xAA, 0x05, 0x0B, 0xFB, 0xFE, 0x5F, 0x42, 0xC5, 0x91, 0x56, 0x89, 0x63}
+  AppSKey: 59E7EEAA7463948FC844A48DE70DD707
+           {0x59, 0xE7, 0xEE, 0xAA, 0x74, 0x63, 0x94, 0x8F, 0xC8, 0x44, 0xA4, 0x8D, 0xE7, 0x0D, 0xD7, 0x07}
+  FCntUp:  1
+  FCntDn:  2
+  ```
+
+You can see the messages while running ```ttnctl subscribe DEEDDEEDDEEDDEED``` or the above mqtt script.
+
+# 3) RN2483 and OTAA Walkthrough
+
+It's quite easy to use OTAA with the RN2483.
+
+## Hardware and Software
+I'm using this board from [Microchip](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=dm164138#utm_medium=Press-Release&utm_term=LoRa%20Certification%20&utm_content=WPD&utm_campaign=868MHz) and [CoolTerm](http://freeware.the-meiers.org) to connect to it with with 9600 Baud.
 
 ## Preparation steps
 Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
@@ -247,106 +348,8 @@ Watch the mqtt channel:
 
 Success!
 
-## Moteino, LMIC and OTAA Walkthrough (WIP)
 
-This is currenty not working, and I have yet to find a solution. There's some info on the ttn forum http://forum.thethingsnetwork.org/t/over-the-air-activation-otaa-with-lmic/1921/11 , but I couldn't manage to get messages through yet. My current source code is in this repository under [ttn_moteino_otaa](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_otaa).
-
-## Preparation steps
-Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
-
-## Hardware and Software
-[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
-
-## First steps
-You can check out the modified code is in this repository, [ttn_moteino_otaa](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_otaa). To get there, register a new device with ttnctl.
-
-  ```
-  ➜ ttnctl devices register DEEDDEEDDEEDDEED
-    INFO Generating random AppKey...
-    INFO Registered device AppKey=94F00F5C07C2F536438600A54CAFF740 DevEUI=DEEDDEEDDEEDDEED
-  ➜ ttnctl devices info DEEDDEEDDEEDDEED
-    Dynamic device:
-
-    AppEUI:  YOUR-OWN-APP-EUI
-             {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
-
-    DevEUI:  DEEDDEEDDEEDDEED
-             {0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED}
-
-    AppKey:  94F00F5C07C2F536438600A54CAFF740
-             {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40}
-
-    Not yet activated
-  ➜  ~
-  ```
-
-You can start out with the LMIC's [default ttn script](https://github.com/matthijskooijman/arduino-lmic/blob/master/examples/ttn/ttn.ino), replace everything from the includes to Hello World with:
-
-  ```
-  static const u1_t APPEUI[8]  = {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}; // IMPORTANT REVERSE BYTES!
-  static const u1_t DEVEUI[8]  = {0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE}; // IMPORTANT REVERSE BYTES!
-  static const u1_t APPKEY[16] = {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40};
-
-  // provide APPEUI (8 bytes, LSBF)
-  void os_getArtEui (u1_t* buf) {
-    memcpy(buf, APPEUI, 8);
-  }
-
-  // provide DEVEUI (8 bytes, LSBF)
-  void os_getDevEui (u1_t* buf) {
-    memcpy(buf, DEVEUI, 8);
-  }
-
-  // provide APPKEY key (16 bytes)
-  void os_getDevKey (u1_t* buf) {
-    memcpy(buf, APPKEY, 16);
-  }
-  ```
-
-You need to replace to reorder the bytes for APPEUI and DEVEUI. I hate pointer arithmetics, so I just use this node oneliner:
-
-  ```
-  ➜  node
-  > '0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED'.split(', ').reverse().join(', ')
-    '0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE'
-  ```
-
-Then, comment out the ```LMIC_setSession``` calls, under LMIC init.
-
-When running the arduino code, I see on the serial monitor:
-
-  ```
-  Starting
-  Packet queued
-  181: EV_JOINING
-  ```
-
-Sadly, its currently stuck there, and I don't get any message on the backend. But, the activation worked:
-
-  ```
-  ➜ ttnctl devices info DEEDDEEDDEEDDEED
-  Dynamic device:
-  AppEUI:  YOUR-OWN-APP-EUI
-           {0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__, 0x__}
-  DevEUI:  DEEDDEEDDEEDDEED
-           {0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED, 0xDE, 0xED}
-  AppKey:  94F00F5C07C2F536438600A54CAFF740
-           {0x94, 0xF0, 0x0F, 0x5C, 0x07, 0xC2, 0xF5, 0x36, 0x43, 0x86, 0x00, 0xA5, 0x4C, 0xAF, 0xF7, 0x40}
-  Activated with the following parameters:
-  DevAddr: 1D2E0041
-           {0x1D, 0x2E, 0x00, 0x41}
-  NwkSKey: FFF0B4BB9E765AA15F60115F04A0CCC7
-           {0xFF, 0xF0, 0xB4, 0xBB, 0x9E, 0x76, 0x5A, 0xA1, 0x5F, 0x60, 0x11, 0x5F, 0x04, 0xA0, 0xCC, 0xC7}
-  AppSKey: AB876E772079FDFDD320A3E3DB1A3D41
-           {0xAB, 0x87, 0x6E, 0x77, 0x20, 0x79, 0xFD, 0xFD, 0xD3, 0x20, 0xA3, 0xE3, 0xDB, 0x1A, 0x3D, 0x41}
-  FCntUp:  0
-  FCntDn:  0
-  ```
-
-However, you could use the activated parameters in the personalized script above.
-So, I haven't gotten OTAA working yet ... to be continued.
-
-# Misc, tips, tricks, lessons learned
+# 4) Misc, tips, tricks, lessons learned
 
 ## Gateway
 Update it often, these commands are your friend:
@@ -358,7 +361,7 @@ Update it often, these commands are your friend:
   ```
 
 ## ttnctl
-Update it often, it gets updated quite frequently. I check it on a daily basis.
+It gets updated quite frequently and I check it on a daily basis.
 
 ## Payload and messages
 I've noticed that sending the same payload is ignored sometimes. E.g.:
