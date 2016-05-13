@@ -34,7 +34,7 @@ Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backen
 Then, use ttnctl to register a personalized device:
 
   ```
-  ➜ ttnctl devices register personalized FEEDBEEF
+  ➜ ttnctl devices register personalized FEEDBEEF --relax-fcnt
   INFO Generating random NwkSKey and AppSKey...
   INFO Registered personalized device AppSKey=575BA7FACB7922AE444BE50E325E1A5E DevAddr=FEEDBEEF Flags=0 NwkSKey=DCD0F771A7291D4291BFB641C280D5B7
   ```
@@ -55,6 +55,7 @@ And check the status
   Flags:   -
   ```
 
+The option ```--relax-fcnt```should only be used in testing. If you dont use it, you'll have to register the device again after every reset.
 We need these keys to send messages from the Moteino to the Things Network.
 
 ## Arduino code

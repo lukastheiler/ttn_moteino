@@ -3,7 +3,7 @@
 
   STEPS
   
-  1) ➜ ttnctl devices register personalized FEEDBEEF
+  1) ➜ ttnctl devices register personalized FEEDBEEF --relax-fcnt
   INFO Generating random NwkSKey and AppSKey...
   INFO Registered personalized device AppSKey=575BA7FACB7922AE444BE50E325E1A5E DevAddr=FEEDBEEF Flags=0 NwkSKey=DCD0F771A7291D4291BFB641C280D5B7
   ➜  ttn_moteino git:(master) ✗ ttnctl devices info FEEDBEEF
@@ -21,7 +21,9 @@
   FCntUp:  0
   FCntDn:  0
 
-  Flags:   -
+  Flags:   relax-fcnt
+
+  Comment: The --relax-fcnt should only used while testing!
 
   2) Insert the keys below & run this script
 
