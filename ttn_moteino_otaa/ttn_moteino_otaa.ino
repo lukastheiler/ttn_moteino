@@ -20,7 +20,6 @@ Original script is Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
  3) Run this code & be very patient. You should get the following messages:
  Starting
  155: EV_JOINING
- Packet queued
  9276632: EV_JOINED
  Packet queued
 
@@ -71,6 +70,7 @@ void os_getDevKey (u1_t* buf) {
 
 static uint8_t mydata[] = "Hello, TTN over OTAA!";
 static osjob_t sendjob;
+static osjob_t initjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
@@ -115,6 +115,8 @@ void onEvent (ev_t ev) {
       break;
     case EV_REJOIN_FAILED:
       Serial.println(F("EV_REJOIN_FAILED"));
+      // Re-init
+      os_setCallback(&initjob, initfunc);      
       break;
     case EV_TXCOMPLETE:
       Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
@@ -170,7 +172,6 @@ static void initfunc (osjob_t* j) {
 }
 
 void setup() {
-  osjob_t initjob;
   Serial.begin(115200);
   Serial.println(F("Starting"));
   // LMIC init
@@ -208,10 +209,9 @@ void setup() {
   LMIC_setDrTxpow(DR_SF7, 14);
 
   os_runloop();
-  // Start job
-  do_send(&sendjob);
+  // Never get here
 }
 
 void loop() {
-  os_runloop_once();
+  // Never get here
 }

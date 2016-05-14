@@ -252,7 +252,7 @@ Eventually, you can check if the device is activated:
   FCntDn:  2
   ```
 
-You can see the messages while running ```ttnctl subscribe DEEDDEEDDEEDDEED``` or the above mqtt script.
+You can see the messages while running ```ttnctl subscribe DEEDDEEDDEEDDEED``` or the above mqtt script. Note that you can get an EV_REJOIN_FAILED event, in this case I just re-initialize, and to try get an EV_JOINED event again. THere are more error event-codes you might want to cover. 
 
 # 3) RN2483 and OTAA Walkthrough
 
