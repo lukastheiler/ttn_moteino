@@ -142,6 +142,10 @@ void setup() {
   // frequency and support for class B is spotty and untested, so this
   // frequency is not configured here.
 
+  // required for downlink
+  LMIC.dn2Dr = SF9;
+
+
   // Disable link check validation
   LMIC_setLinkCheckMode(0);
   // Set data rate and transmit power (note: txpow seems to be ignored by the library)

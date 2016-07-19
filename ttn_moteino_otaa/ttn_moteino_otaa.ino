@@ -205,6 +205,9 @@ void setup() {
   // Disable link check validation
   LMIC_setLinkCheckMode(0);
 
+  // required for downlink
+  LMIC.dn2Dr = SF9;
+
   // Set data rate and transmit power (note: txpow seems to be ignored by the library)
   LMIC_setDrTxpow(DR_SF7, 14);
 
