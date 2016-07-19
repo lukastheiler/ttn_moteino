@@ -16,11 +16,11 @@ This step by step guide should get you up and running with the Moteino Lora edit
 
 - [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll  need an USB-TTL converter.
 
-## Sodering
+## Soldering
 
 ### D0 and D1 pins
 
-Ouf ot the box, the Moteino is meant for peer to peer communication. In order to make the SX1276 chip talk to the things network, you'll have to soder at least the D0 and D1 pin of the chip to the moteino's pins 0 and 1. Note that D2 is already connected with pin 0. My sodering skills are far beyond [Urs Marti](https://github.com/urs8000)'s so I just show you his image, D0/D1 are the red cables, the yellow one is reset (not really needed).
+Ouf ot the box, the Moteino is meant for peer to peer communication. In order to make the SX1276 chip talk to the things network, you'll have to solder at least the D0 and D1 pin of the chip to the moteino's pins 0 and 1. Note that D2 is already connected with pin 0. My soldering skills are far beyond [Urs Marti](https://github.com/urs8000)'s so I just show you his image, D0/D1 are the red cables, the yellow one is reset (not really needed).
 <img src="https://github.com/lukastheiler/ttn_monteino/blob/master/images/monteinomega_for_lora-ttn_1024.jpg">
 
 ### Antenna
@@ -163,7 +163,7 @@ I've finally figured that one out thanks to the guys on the ttn forum http://for
 Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
 
 ## Hardware and Software
-[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the sodering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
+[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the soldering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
 
 ## TTN setup
 Register a new device with ttnctl.
@@ -252,7 +252,7 @@ Eventually, you can check if the device is activated:
   FCntDn:  2
   ```
 
-You can see the messages while running ```ttnctl subscribe DEEDDEEDDEEDDEED``` or the above mqtt script. Note that you can get an EV_REJOIN_FAILED event, in this case I just re-initialize, and to try get an EV_JOINED event again. THere are more error event-codes you might want to cover. 
+You can see the messages while running ```ttnctl subscribe DEEDDEEDDEEDDEED``` or the above mqtt script. Note that you can get an EV_REJOIN_FAILED event, in this case I just re-initialize, and to try get an EV_JOINED event again. THere are more error event-codes you might want to cover.
 
 # 3) RN2483 and OTAA Walkthrough
 
