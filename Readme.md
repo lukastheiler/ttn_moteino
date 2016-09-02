@@ -14,7 +14,13 @@ This guide has been modified for the new staging backend, and has the following 
 
 This step by step guide should get you up and running with the Moteino Lora edition & The Things Network. Shopping list:
 
-- [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll  need an USB-TTL converter.
+- [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll need an USB-TTL converter. 
+
+Notes: 
+
+- The latest LMIC code did shrink a lot in the recent update, so you can also use the small [Moteino](https://lowpowerlab.com/shop/product/99) and still have like 10k free to code. You just have to adapt the soldering a bit, I connected D1-7, D0-6 and Reset-4 and it worked fine.
+- Felix from LowPowerLab started creating a LORA node, which has three soldering-bridges for the pins prepared. You'll want to check if it's already available, since that makes soldering a lot easier.
+
 
 ## Soldering
 
@@ -55,10 +61,13 @@ And check the status
   Flags:   -
   ```
 
-The option ```--relax-fcnt```should only be used in testing. If you dont use it, you'll have to register the device again after every reset.
+The option ```--relax-fcnt``` should only be used in testing. If you dont use it, you'll have to register the device again after every reset.
 We need these keys to send messages from the Moteino to the Things Network.
 
 ## Arduino code
+
+Download the [Arduino IDE](https://www.arduino.cc/en/Main/Software) and follow the installation steps from [Moteino library](https://github.com/LowPowerLab/Moteino/tree/master/MEGA/Core). Once you've installed the Moteino library, select Moteino Mega in the Arduino IDE's Tools/Board menu.
+
 I started out with this repository https://github.com/matthijskooijman/arduino-lmic which made the IBM LIC library availbably to arduino. The arduino code is in this git repository [ttn_moteino_abp](https://github.com/lukastheiler/ttn_moteino/tree/master/ttn_moteino_abp).
 
 
@@ -163,7 +172,7 @@ I've finally figured that one out thanks to the guys on the ttn forum http://for
 Same as above, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
 
 ## Hardware and Software
-[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the soldering bits below) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
+[Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega) (see the soldering bits above) and Thomas Telkamp and Matthijs Kooijman's [port of the LMIC library](https://github.com/matthijskooijman/arduino-lmic).
 
 ## TTN setup
 Register a new device with ttnctl.
@@ -256,7 +265,9 @@ You can see the messages while running ```ttnctl subscribe DEEDDEEDDEEDDEED``` o
 
 # 3) RN2483 and OTAA Walkthrough
 
-It's quite easy to use OTAA with the RN2483.
+IMPORTANT: with the new staging environment, OTAA with the RN2483 does not work anymore. Basically, after ```mac join otaa``` you get ```denied```. Even though ttn has registered the device (you'll se that in the saging backend).
+
+It used to be quite easy to use OTAA with the RN2483.
 
 ## Hardware and Software
 I'm using this board from [Microchip](http://www.microchip.com/DevelopmentTools/ProductDetails.aspx?PartNO=dm164138#utm_medium=Press-Release&utm_term=LoRa%20Certification%20&utm_content=WPD&utm_campaign=868MHz) and [CoolTerm](http://freeware.the-meiers.org) to connect to it with with 9600 Baud.
@@ -347,7 +358,6 @@ Watch the mqtt channel:
   WARN Sending data as plain text is bad practice. We recommend to transmit data in a binary format. DevEUI=FEEDFEEDFEEDFEED
   ```
 
-Success!
 
 
 # 4) Misc, tips, tricks, lessons learned
