@@ -36,7 +36,8 @@ You'll also need to attach an antenna. I just took a copper wire of 8.2cm length
 
 ## TTN setup and create a personalized device
 
-Basically, follow the guide from http://staging.thethingsnetwork.org/wiki/Backend/ttnctl/QuickStart. Download ttnctl, sign up, create an application.
+You have two options to create the register devices in TTN. Firstly you can use the GUI at https://staging.thethingsnetwork.org, which is straightforward. Secondly, you can use the commandline tool ttnctl. When I started documented this, only ttnctl was available. 
+Basically, follow the guide from https://www.thethingsnetwork.org/wiki/Backend/ttnctl/ttnctl. Download ttnctl, sign up, create an application. You can use either the GUI 
 Then, use ttnctl to register a personalized device:
 
   ```
