@@ -8,15 +8,17 @@ This guide has been modified for the new staging backend, and has the following 
 
 3) RN2483 and OTAA Walkthrough
 
-4) Misc, tips, tricks, lessons learned
+4) Sending messages to the Moteino with nodejs
+
+5) Misc, tips, tricks, lessons learned
 
 # 1) Moteino, LMIC and ABP Walkthrough
 
 This step by step guide should get you up and running with the Moteino Lora edition & The Things Network. Shopping list:
 
-- [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll need an USB-TTL converter. 
+- [Moetino](https://lowpowerlab.com/shop/Moteino/moteinomega), the RFM95 LoRa868 version. They have an [USB](https://lowpowerlab.com/shop/Moteino/MoteinoMEGAUSB) version which probably is easier to get started, else you'll need an USB-TTL converter.
 
-Notes: 
+Notes:
 
 - The latest LMIC code did shrink a lot in the recent update, so you can also use the small [Moteino](https://lowpowerlab.com/shop/product/99) and still have like 10k free to code. You just have to adapt the soldering a bit, I connected D1-7, D0-6 and Reset-4 and it worked fine.
 - Felix from LowPowerLab started creating a LORA node, which has three soldering-bridges for the pins prepared. You'll want to check if it's already available, since that makes soldering a lot easier.
@@ -36,8 +38,8 @@ You'll also need to attach an antenna. I just took a copper wire of 8.2cm length
 
 ## TTN setup and create a personalized device
 
-You have two options to create the register devices in TTN. Firstly you can use the GUI at https://staging.thethingsnetwork.org, which is straightforward. Secondly, you can use the commandline tool ttnctl. When I started documented this, only ttnctl was available. 
-Basically, follow the guide from https://www.thethingsnetwork.org/wiki/Backend/ttnctl/ttnctl. Download ttnctl, sign up, create an application. You can use either the GUI 
+You have two options to create the register devices in TTN. Firstly you can use the GUI at https://staging.thethingsnetwork.org, which is straightforward. Secondly, you can use the commandline tool ttnctl. When I started documented this, only ttnctl was available.
+Basically, follow the guide from https://www.thethingsnetwork.org/wiki/Backend/ttnctl/ttnctl. Download ttnctl, sign up, create an application. You can use either the GUI
 Then, use ttnctl to register a personalized device:
 
   ```
@@ -361,7 +363,32 @@ Watch the mqtt channel:
 
 
 
-# 4) Misc, tips, tricks, lessons learned
+# 4) Sending messages to the Moteino with nodejs
+
+TTN has a great ttn library thats nicely [documented](https://www.thethingsnetwork.org/docs/node-js/#top). The best way to start is to take one of their examples and do ```npm install ttn```.
+To send a string message to the Moteino, these two lines are enough:
+```
+var payload = new Buffer('Lukas was here','ascii')
+client.downlink(devEUI, payload);
+```
+
+And to decode it on the Moteino, you need to adapt the event TX_COMPLETE event:
+```
+...
+case EV_TXCOMPLETE:
+      Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
+      if (LMIC.dataLen)  {
+        char str[LMIC.dataLen+1];
+        str[LMIC.dataLen]='\0'; // Add terminator
+        memcpy(&str,&(LMIC.frame+LMIC.dataBeg)[0],LMIC.dataLen);  
+        Serial.println(str);
+     }
+
+```
+
+Over LORA, you only get a message on the node after a sending something. If you want to check messages more frequently, LMIC has an option to send a ping request every 2^x seconds, by using ```LMIC_setPingable(x); ```.
+
+# 5) Misc, tips, tricks, lessons learned
 
 ## Gateway
 Update it often, these commands are your friend:
