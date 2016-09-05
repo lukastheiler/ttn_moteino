@@ -386,7 +386,7 @@ case EV_TXCOMPLETE:
 
 ```
 
-Over LORA, you only get a message on the node after a sending something. If you want to check messages more frequently, LMIC has an option to send a ping request every 2^x seconds, by using ```LMIC_setPingable(x); ```.
+Note that over LORA/TTN, you only get a message on the node after a sending something. 
 
 # 5) Misc, tips, tricks, lessons learned
 
